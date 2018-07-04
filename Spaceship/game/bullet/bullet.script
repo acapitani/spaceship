@@ -1,0 +1,49 @@
+go.property("speed", 200)
+go.property("bullet_type", 1)
+go.property("angle", 0)
+
+local collsion_message_id=hash("collision_response")
+
+function init(self)
+	if self.bullet_type==1 then
+		msg.post("#sprite", "play_animation", {id = hash("bullet1")})
+		self.speed = -100
+	else
+		msg.post("#sprite", "play_animation", {id = hash("bullet2")})
+		self.speed = 200
+	end
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	local p = go.get_position()
+	p.y = p.y + (self.speed * dt)*math.cos(self.angle)
+	p.x = p.x + (self.speed * dt)*math.sin(self.angle)
+	--p.y = p.y + (self.speed * dt)
+	if (p.y > 380) or (p.y<0) or (p.x>256) or (p.x<0) then
+		go.delete()
+	else
+		go.set_position(p)
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	--[[
+	if message_id == collision_message_id then
+		if message.group==hash("ship") and self.bullet_type==1 then
+			go.delete()
+		elseif message.group==hash("enemy") and self.bullet_type==2 then
+			go.delete()
+		end
+	end
+	--]]
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Remove this function if not needed
+end

@@ -1,0 +1,71 @@
+local sounds = require "game/sounds"
+local enemy_small_timer = 0
+local enemy_medium_timer = 0
+local enemy_big_timer = 0
+local bonus_timer = 0
+local explosion_message_id = hash("explosion")
+local shipfire_message_id = hash("ship_fire")
+local shipbonus1_message_id = hash("ship_bonus1")
+local shipbonus2_message_id = hash("ship_bonus1")
+
+function init(self)
+	enemy_small_timer = 0
+	bonus_timer  = 0
+	score = 0
+	enemybig_count = 0 
+	sounds.init()
+	msg.post("music#sound", "play_sound", {delay = 0, gain = 0.5})
+end
+
+function final(self)
+	msg.post("music#sound", "stop")
+end
+
+function update(self, dt)
+	sounds.update(dt)
+	local delta = dt*1000.0
+	enemy_small_timer = enemy_small_timer + delta
+	enemy_medium_timer = enemy_medium_timer + delta
+	enemy_big_timer = enemy_big_timer + delta
+	bonus_timer = bonus_timer + delta
+	if enemy_small_timer>=500 then
+		local pos = vmath.vector3(math.random(8, 248), 400, 0.8)
+		factory.create("#enemy_small_factory", pos)
+		enemy_small_timer = 0
+	end
+	if enemy_medium_timer>=5000 then
+		local pos = vmath.vector3(math.random(16, 248), 400, 0.8)
+		factory.create("#enemy_medium_factory", pos)
+		enemy_medium_timer = 0
+	end
+	if enemy_big_timer>=15000 and enemybig_count<3 then
+		local pos = vmath.vector3(math.random(16, 248), 400, 0.8)
+		factory.create("#enemy_big_factory", pos)
+		enemy_big_timer = 0
+	end
+	if bonus_timer>=8000 then
+		local pos = vmath.vector3(math.random(8, 248), 400, 0.8)
+		local bt = 2
+		if math.random(1,5)==1 then
+			bt = 1
+		end
+		factory.create("#bonus_factory", pos, nil, {bonus_type=bt})
+		bonus_timer = 0
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id==explosion_message_id then
+		local pos = message.position
+		pos.z = 0.9
+		factory.create("#explosion_factory", pos)
+		--msg.post("soundfx#explosion", "play_sound", {delay = 0, gain = 0.1})
+		sounds.play("soundfx#explosion", 0.5)
+	elseif message_id==shipfire_message_id then
+		sounds.play("soundfx#laser", 0.5)
+	elseif message_id==shipbonus1_message_id then
+		sounds.play("soundfx#bonus1", 0.5)
+	elseif message_id==shipbonus2_message_id then
+		sounds.play("soundfx#bonus2", 0.5)
+	end
+end

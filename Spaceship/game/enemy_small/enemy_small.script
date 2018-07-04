@@ -1,0 +1,53 @@
+go.property("speed", 50)
+go.property("fire_delay", 4000)
+go.property("energy", 2)
+
+local collision_message_id = hash("collision_response")
+
+function init(self)
+	self.fire_time = 0
+	msg.post("#sprite", "play_animation", {id = hash("anim")})
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	self.fire_time = self.fire_time + (dt*1000.0)
+	if self.fire_time>=self.fire_delay then
+		local p = go.get_position()
+		self.fire_time = 0
+		p.z = 0.5
+		factory.create("#enemy_bullet_factory", p, nil, {bullet_type=1})
+	end
+
+	local pos = go.get_position()
+	pos.y = pos.y - (self.speed*dt)
+	if pos.y<=-16 then
+		go.delete()
+	else
+		go.set_position(pos)
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id==collision_message_id and message.group == hash("bullet") then
+		local url = msg.url(message.other_id)
+		url.fragment = "script"
+		if go.get(url, hash("bullet_type"))==2 then
+			msg.post("/controller#ingame", "explosion", {position=go.get_position()})
+			self.energy = self.energy - 1
+			if self.energy<=0 then
+				go.delete()
+				score = score + 50
+			end
+			go.delete(message.other_id)
+		end
+	elseif message_id==collision_message_id and message.group==hash("ship") then
+		msg.post("/controller#ingame", "explosion", {position=go.get_position()})
+		go.delete()
+		score = score + 50
+	end
+end

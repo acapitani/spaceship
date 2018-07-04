@@ -1,0 +1,43 @@
+local splash_status=0
+local screen_width = tonumber(sys.get_config("display.width"))
+local screen_height = tonumber(sys.get_config("display.height"))
+local screen_widthr = screen_width
+local screen_heightr = screen_height
+
+local function splash_done(self, url, property)
+	if splash_status==0 then
+		go.animate("#sprite", "tint", go.PLAYBACK_ONCE_FORWARD, vmath.vector4(1, 1, 1, 0), go.EASING_LINEAR, 0.5,1.0,splash_done)
+	else			
+		fader_request=msg.url(".")
+		next_scene="loader#home"
+		--next_scene="loader#ingame"
+		msg.post("fader", "fadeout", { position = go.get_position() })			
+	end
+	splash_status=splash_status+1	
+end
+
+function init(self)
+	msg.post(".", "start", { position = go.get_position() })
+	--msg.post("@render:", "clear_color", { color = vmath.vector4(1,1,1, 0) })
+
+	msg.post("fader", "hide", { position = go.get_position() })	
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("start") then	
+		splash_status=0
+
+		local name="logo"
+		local p=go.get_position(name)	
+		local size=go.get("#sprite", "size")
+		p.x=(RESOLUTION_X)/2
+		p.y=(RESOLUTION_Y)/2
+		go.set_position(p,name)
+		
+		go.set("#sprite", "tint", vmath.vector4(1, 1, 1, 0))
+		go.animate("#sprite", "tint", go.PLAYBACK_ONCE_FORWARD, vmath.vector4(1, 1, 1, 1), go.EASING_LINEAR, 0.5,0,splash_done)
+	elseif message_id == hash("end") then
+		--msg.post("@render:", "clear_color", { color = vmath.vector4(0,0,0, 0) })
+		msg.post("game:/loader#game", "unload_scene", { position = go.get_position() })
+	end
+end

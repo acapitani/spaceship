@@ -1,0 +1,32 @@
+[project]
+title = Spaceship
+version = 0.1
+
+[bootstrap]
+main_collection = /game/game.collectionc
+render = /game/render/lowres.renderc
+
+[input]
+game_binding = /input/game.input_bindingc
+use_accelerometer = 0
+
+[display]
+width = 512
+height = 768
+
+[physics]
+scale = 0.02
+
+[script]
+shared_state = 1
+
+[android]
+package = com.marcogiorgini.games.Spaceship
+input_method = HiddenInputField
+
+[factory]
+max_count = 1024
+
+[sprite]
+max_count = 1024
+

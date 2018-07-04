@@ -1,0 +1,47 @@
+fader_request=""
+
+local function on_animation_done(self, url, property)
+	if fader_request == "" then
+	 fader_request=""	 
+	else
+		msg.post(fader_request, "end")
+		fader_request=""	 
+	end
+end
+
+function init(self)
+	-- Add initialization code here
+	-- Remove this function if not needed
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	-- Add update code here
+	-- Remove this function if not needed
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("hide") then
+		gui.animate(gui.get_node("black"), gui.PROP_COLOR, vmath.vector4(0, 0, 0, 0), gui.EASING_INOUTQUAD, 0.0, 0.0, on_animation_done)
+	elseif message_id == hash("fadein") then
+		gui.animate(gui.get_node("black"), gui.PROP_COLOR, vmath.vector4(0, 0, 0, 0), gui.EASING_INOUTQUAD, 0.5, 0.0, on_animation_done)
+	elseif message_id == hash("fadeout") then
+		gui.animate(gui.get_node("black"), gui.PROP_COLOR, vmath.vector4(0, 0, 0, 1), gui.EASING_INOUTQUAD, 0.5, 0.0, on_animation_done)
+	end
+	
+	
+end
+
+function on_input(self, action_id, action)
+	-- Add input-handling code here
+	-- Remove this function if not needed
+end
+
+function on_reload(self)
+	-- Add input-handling code here
+	-- Remove this function if not needed
+end

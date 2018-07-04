@@ -1,0 +1,56 @@
+-- global (screen)
+screen_width = tonumber(sys.get_config("display.width"))
+screen_height = tonumber(sys.get_config("display.height"))
+screen_widthr = screen_width
+screen_heightr = screen_height
+-- global (fader)
+loaded_scene=""
+next_scene=""
+-- global (game)
+game_mode=0
+score = 0 
+
+function init(self)
+	--print(msg.url())	
+	msg.post(".", "acquire_input_focus")
+	loaded_scene="loader#splash"
+
+	-- game_mode=2
+	-- loaded_scene="loader#ingame"
+	
+	msg.post(loaded_scene, "load")
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	-- Add update code here
+	-- Remove this function if not needed
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("proxy_loaded") then
+		msg.post(sender, "init")
+		msg.post(sender, "enable")
+	elseif message_id == hash("unload_scene") then
+		msg.post(loaded_scene, "disable")
+		msg.post(loaded_scene, "final")
+		msg.post(loaded_scene, "unload")
+    elseif message_id == hash("proxy_unloaded") then
+		loaded_scene=next_scene
+		msg.post(loaded_scene, "load")
+	end				
+end
+
+function on_input(self, action_id, action)
+	-- Add input-handling code here
+	-- Remove this function if not needed
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Remove this function if not needed
+end

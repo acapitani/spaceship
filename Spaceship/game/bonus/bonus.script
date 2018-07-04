@@ -1,0 +1,39 @@
+go.property("speed", 100)
+go.property("bonus_type", 1)
+
+function init(self)
+	if self.bonus_type==1 then
+		-- energy bonus
+		msg.post("#sprite", "play_animation", {id = hash("bonus_energy")})
+	else
+		-- ammo bonus
+		msg.post("#sprite", "play_animation", {id = hash("bonus_ammo")})
+	end
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	local p = go.get_position()
+	p.y = p.y - (self.speed * dt)
+	if (p.y<0) then
+		go.delete()
+	else
+		go.set_position(p)
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	--[[
+	if message_id == collision_message_id then
+		if message.group==hash("ship") and self.bullet_type==1 then
+			go.delete()
+		elseif message.group==hash("enemy") and self.bullet_type==2 then
+			go.delete()
+		end
+	end
+	--]]
+end

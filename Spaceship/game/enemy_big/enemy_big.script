@@ -1,0 +1,108 @@
+go.property("speed", 100)
+go.property("fire_delay", 150)
+go.property("land_delay", 3000)
+go.property("energy", 20)
+
+enemybig_count = 0
+
+local collision_message_id = hash("collision_response")
+
+local function landed(self)
+	--local pos = vmath.vector3(math.random(16, 240), math.random(256, 612), 1.0)
+	--go.animate(".", "position", go.PLAYBACK_ONCE_FORWARD, pos, go.EASING_INOUTSINE, 2.0, 0.5, landed)
+	self.status = 1
+	self.land_time = 0
+	self.fire_time = 0
+end
+
+local function moveto(self)
+	local pos = vmath.vector3(math.random(16, 240), math.random(256, 612), 1.0)
+	go.animate(".", "position", go.PLAYBACK_ONCE_FORWARD, pos, go.EASING_INSINE, 2.0, 0.5, landed)
+end
+
+function init(self)
+	enemybig_count = enemybig_count + 1
+	self.status = 0	-- 0: moving, 1: landed and fire
+	self.fire_time = 0
+	self.land_time = 0
+	msg.post("#sprite", "play_animation", {id = hash("anim")})
+	moveto(self)
+end
+
+function final(self)
+	enemybig_count = enemybig_count - 1
+end
+
+function update(self, dt)
+	if self.status==1 then
+		self.land_time = self.land_time + (dt*1000.0)
+		self.fire_time = self.fire_time + (dt*1000.0)
+		if self.fire_time>=self.fire_delay then
+			local p1 = go.get_position()
+			local p2 = go.get_position()
+			self.fire_time = 0
+			p1.z = 0.5
+			p1.x = p1.x + 8
+			p2.z = 0.5
+			p2.x = p2.x - 8
+			factory.create("#enemy_bullet_factory", p1, nil, {bullet_type=1})
+			factory.create("#enemy_bullet_factory", p2, nil, {bullet_type=1})
+		end
+		if self.land_time>=self.land_delay then
+			self.status = 0
+			moveto(self)
+		end
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id==collision_message_id and message.group == hash("bullet") then
+		local url = msg.url(message.other_id)
+		url.fragment = "script"
+		if go.get(url, hash("bullet_type"))==2 then
+			msg.post("/controller#ingame", "explosion", {position=go.get_position()})
+			self.energy = self.energy - 1
+			if self.energy<=0 then
+				local p1 = go.get_position()
+				p1.x = p1.x + 8
+				p1.y = p1.y + 8
+				local p2 = go.get_position()
+				p2.x = p2.x - 8
+				p2.y = p2.y - 8
+				local p3 = go.get_position()
+				p3.x = p3.x + 8
+				p3.y = p3.y - 8
+				local p4 = go.get_position()
+				p4.x = p4.x - 8
+				p4.y = p4.y + 8
+				msg.post("/controller#ingame", "explosion", {position=p1})
+				msg.post("/controller#ingame", "explosion", {position=p2})
+				msg.post("/controller#ingame", "explosion", {position=p3})
+				msg.post("/controller#ingame", "explosion", {position=p4})
+				go.delete()
+				score = score + 200
+			end
+			go.delete(message.other_id)
+		end
+	elseif message_id==collision_message_id and message.group==hash("ship") then
+		local p1 = go.get_position()
+		p1.x = p1.x + 8
+		p1.y = p1.y + 8
+		local p2 = go.get_position()
+		p2.x = p2.x - 8
+		p2.y = p2.y - 8
+		local p3 = go.get_position()
+		p3.x = p3.x + 8
+		p3.y = p3.y - 8
+		local p4 = go.get_position()
+		p4.x = p4.x - 8
+		p4.y = p4.y + 8
+		msg.post("/controller#ingame", "explosion", {position=p1})
+		msg.post("/controller#ingame", "explosion", {position=go.get_position()})
+		msg.post("/controller#ingame", "explosion", {position=p2})
+		msg.post("/controller#ingame", "explosion", {position=p3})
+		msg.post("/controller#ingame", "explosion", {position=p4})
+		go.delete()
+		score = score + 200
+	end
+end

@@ -1,0 +1,33 @@
+-- ground.script
+local pieces = { "ground01", "ground02", "ground03" } 
+local clouds = { {name = "cloud1", speed=128}, {name = "cloud2", speed=100} }
+
+function init(self) 
+	self.speed = 64  -- Speed in pixels/s
+end
+
+function update(self, dt)
+	for i, p in ipairs(pieces) do 
+        local pos = go.get_position(p)
+        if pos.y <= -256 then 
+            pos.y = 512 + (pos.y + 256)
+        end
+        pos.y = pos.y - self.speed * dt 
+        go.set_position(pos, p) 
+	end
+	for i, p in ipairs(clouds) do
+		local pos = go.get_position(p.name)
+		if pos.y<=-512 then
+			pos.y = 768 + (pos.y+math.random(256))
+		end
+		pos.y = pos.y - p.speed * dt
+		go.set_position(pos, p.name)
+	end	
+end
+
+-- ground.script
+function on_message(self, message_id, message, sender)
+	if message_id == hash("set_speed") then 
+        self.speed = message.speed 
+    end
+end
